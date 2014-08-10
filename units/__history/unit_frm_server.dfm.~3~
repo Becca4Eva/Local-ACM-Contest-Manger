@@ -1,0 +1,36 @@
+object frm_server: Tfrm_server
+  Left = 0
+  Top = 0
+  Caption = 'Server Configuration'
+  ClientHeight = 373
+  ClientWidth = 360
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  object ListBox1: TListBox
+    Left = 8
+    Top = 8
+    Width = 193
+    Height = 97
+    ItemHeight = 13
+    TabOrder = 0
+  end
+  object IdServerIOHandlerStack1: TIdServerIOHandlerStack
+    Left = 240
+    Top = 200
+  end
+  object IdIOHandlerStack1: TIdIOHandlerStack
+    MaxLineAction = maException
+    Port = 0
+    DefaultPort = 0
+    Left = 296
+    Top = 200
+  end
+end

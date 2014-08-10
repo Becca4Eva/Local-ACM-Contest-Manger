@@ -1,0 +1,167 @@
+unit unit_frm_main;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ToolWin, Vcl.ActnMan,
+  Vcl.ActnCtrls, Vcl.ActnMenus, System.Actions, Vcl.ActnList, Vcl.StdActns,
+  Vcl.PlatformDefaultStyleActnCtrls, IdContext, IdBaseComponent, IdComponent,
+  IdCustomTCPServer, IdTCPServer,unit_functions,IdGlobal, Vcl.ExtCtrls,inifiles;
+type
+  Tfrm_main = class(TForm)
+    Button1: TButton;
+    ActionManager1: TActionManager;
+    ActionMainMenuBar1: TActionMainMenuBar;
+    Action1: TAction;
+    id_server: TIdTCPServer;
+    Button2: TButton;
+    Action2: TAction;
+    Memo1: TMemo;
+    Button3: TButton;
+    Edit1: TEdit;
+    Edit2: TEdit;
+    Button4: TButton;
+    timer_main: TTimer;
+    label_time: TLabel;
+    procedure Action1Execute(Sender: TObject);
+    procedure teamManager(Sender: TObject);
+    procedure serverStart(Sender: TObject);
+    procedure id_serverExecute(AContext: TIdContext);
+    procedure FormCreate(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure timer_mainTimer(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frm_main: Tfrm_main;
+  usersList                     : TStrings;     //users
+  startDateTime, finishDateTime : tdatetime;    //times
+  contestStarted                : boolean = false;
+  contestName                   : string[100];
+
+implementation
+
+{$R *.dfm}
+
+uses unit_frm_teamManager, unit_frm_server;
+
+procedure Tfrm_main.Action1Execute(Sender: TObject);
+begin
+beep;
+end;
+
+procedure Tfrm_main.teamManager(Sender: TObject);
+begin
+  frm_teamManager.ShowModal;
+end;
+
+procedure Tfrm_main.timer_mainTimer(Sender: TObject);
+begin
+  if contestStarted then
+    label_time.Caption := FormatDateTime('HH : MM : SS', finishDateTime - now)
+end;
+
+procedure Tfrm_main.Button3Click(Sender: TObject);
+begin
+memo1.Lines := userslist;
+end;
+
+procedure Tfrm_main.Button4Click(Sender: TObject);
+var
+a : string;
+begin
+a := edit1.Text;
+  if pos('user:',edit1.Text) = 1 then
+  begin
+    delete(a,1,5);
+    edit1.Text := a;
+  end;
+end;
+
+procedure Tfrm_main.FormCreate(Sender: TObject);
+begin
+  usersList := TStringList.Create;
+end;
+
+procedure Tfrm_main.id_serverExecute(AContext: TIdContext);
+var
+  clientData, username, password: String;
+  index, submitNo : integer;
+  source : TStringstream;
+  dir    : string;
+  ini : tinifile;
+begin
+  clientData := Trim(AContext.Connection.IOHandler.ReadLn());
+
+  if pos('user:',clientData) = 1 then
+  begin
+    delete(clientData,1,5);
+    username := clientData;
+    index := usersList.IndexOfName(username);
+    if index = -1 then
+      AContext.Connection.IOHandler.WriteLn('User does not exists!')
+    else
+    begin
+      AContext.Connection.IOHandler.WriteLn('Password?');
+      clientData := Trim(AContext.Connection.IOHandler.ReadLn(IdGlobal.LF,-1));//BECCA
+
+      if AnsiCompareStr(usersList.ValueFromIndex[index] , clientData) <> 0 then
+        AContext.Connection.IOHandler.WriteLn('Password is wrong.')
+      else
+        begin
+        AContext.Connection.IOHandler.WriteLn('_');
+        clientData := Trim(AContext.Connection.IOHandler.ReadLn(IdGlobal.LF,-1));//BECCA
+        showmessage(clientData);
+        if clientData = 'time' then
+          AContext.Connection.IOHandler.WriteLn(label_time.Caption)
+        else if pos('source:',clientData) = 1 then
+             begin
+               delete(clientData,1,7);
+               submitNo := 0;
+               repeat
+                 inc(submitNo);
+                 dir := extractfilepath(application.ExeName) + '\Contests\' + contestName + '\Teams\' + username + '\sources\' + clientData + '\submit ' + inttostr(submitNo);
+               until FileExists(dir + '\status.ini') = false;
+               if not ForceDirectories(dir) then ShowMessage('New directory add failed with error : '+ IntToStr(GetLastError));
+               try
+                 AContext.Connection.IOHandler.WriteLn('Your source...');
+                 source := TStringStream.Create;
+                 AContext.Connection.IOHandler.LargeStream := True;
+                 AContext.Connection.IOHandler.ReadStream(source); //read string from client
+                 memo1.Text := source.DataString;
+                 source.SaveToFile(dir + '\source.cpp');
+                 ini := tinifile.Create(dir + '\status.ini');
+                 try
+                   ini.WriteString('Status','resault','in queue');
+                   ini.WriteInteger('Status', 'length' , source.Size);
+                 finally
+                  ini.Free;
+                 end;
+                 AContext.Connection.IOHandler.WriteLn('OK');
+               finally
+                 source.Free;
+               end;
+             end
+         else
+          AContext.Connection.IOHandler.WriteLn('Wrong syntax 02');
+
+        end;
+    end;
+  end else
+    AContext.Connection.IOHandler.WriteLn('Wrong syntax 01');
+
+
+end;
+
+procedure Tfrm_main.serverStart(Sender: TObject);
+begin
+  frm_server.ShowModal;
+end;
+
+end.

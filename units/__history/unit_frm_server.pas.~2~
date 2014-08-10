@@ -1,0 +1,74 @@
+unit unit_frm_server;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, IdBaseComponent, IdComponent,
+  IdServerIOHandler, IdServerIOHandlerSocket, IdServerIOHandlerStack,
+  IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack,IdStack, Vcl.StdCtrls;
+
+type
+  Tfrm_server = class(TForm)
+    IdServerIOHandlerStack1: TIdServerIOHandlerStack;
+    IdIOHandlerStack1: TIdIOHandlerStack;
+    ListBox1: TListBox;
+    procedure FormCreate(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frm_server: Tfrm_server;
+
+implementation
+
+{$R *.dfm}
+
+procedure Tfrm_server.FormCreate(Sender: TObject);
+var
+  IPs: TStringList;
+  IP: String;
+  I: Integer;
+  Err: Boolean;
+begin
+  IPs := TStringList.Create;
+  try
+    GStack.AddLocalAddressesToList(IPs);
+    for I := 0 to IPs.Count-1 do
+    begin
+      IP := IPs[I];
+      listbox1.Items.Add(IPs[I]);
+      // TIdStack.IsIP() currently only supports IPv4, but
+      // it will be updated to support IPv6 in a future
+      // release...
+      //
+      // if GStack.IsIP(IP) then
+      // if GStack.IsIPv4(IP) then
+
+
+      if not Err then
+        Break;
+      IP := '';
+
+      // alternatively:
+      {
+      IPAddr := TIdIPAddress.MakeAddressObject(IPs[I]);
+      IP := IPAddr.IPv4AsString; // returns blank if not IPv4
+      IPAddr.Free;
+      if IP <> '' then
+        Break;
+      }
+    end;
+  finally
+    IPs.Free;
+  end;
+  if IP <> '' then
+  begin
+    // use IP as needed...
+  end;
+end;
+
+end.
