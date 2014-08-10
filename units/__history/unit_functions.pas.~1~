@@ -1,0 +1,30 @@
+unit unit_functions;
+
+interface
+
+uses
+  IdStack,System.Classes;
+
+
+function getLocalIPs():TStringList;
+
+
+implementation
+
+function getLocalIPs() : TStringList;
+var
+  IPs: TStringList;
+  IP: String;
+  I: Integer;
+begin
+  IPs := TStringList.Create;
+  try
+    GStack.AddLocalAddressesToList(IPs);
+    for I := 0 to IPs.Count-1 do IP := IPs[I];
+  finally
+    IPs.Free;
+  end;
+  result = IPs;
+end;
+
+end.

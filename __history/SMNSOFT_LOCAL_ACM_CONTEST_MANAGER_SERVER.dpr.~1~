@@ -1,0 +1,16 @@
+program SMNSOFT_LOCAL_ACM_CONTEST_MANAGER_SERVER;
+
+uses
+  Vcl.Forms,
+  unit_frm_main in 'units\unit_frm_main.pas' {frm_main},
+  unit_frm_teamManager in 'units\unit_frm_teamManager.pas' {frm_teamManager};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(Tfrm_main, frm_main);
+  Application.CreateForm(Tfrm_teamManager, frm_teamManager);
+  Application.Run;
+end.
